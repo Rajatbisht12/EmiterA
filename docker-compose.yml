@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - REACT_APP_WS_URL=ws://localhost:8080
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT=8080
+      - ALLOWED_ORIGINS=http://rajat.work.gd/
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis-data:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+
+volumes:
+  redis-data:
