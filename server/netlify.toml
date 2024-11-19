@@ -9,9 +9,25 @@
   CGO_ENABLED = "0"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server"
+  from = "/api/game/new"
+  to = "/.netlify/functions/server-game-new"
   status = 200
+
+[[redirects]]
+  from = "/api/game/draw"
+  to = "/.netlify/functions/server-game-draw"
+  status = 200
+
+[[redirects]]
+  from = "/api/leaderboard"
+  to = "/.netlify/functions/server-leaderboard"
+  status = 200
+
+[[redirects]]
+  from = "/api/game/resume"
+  to = "/.netlify/functions/server-game-resume"
+  status = 200
+
 
 [[headers]]
   for = "/*"
