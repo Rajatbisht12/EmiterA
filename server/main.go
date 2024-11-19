@@ -122,11 +122,11 @@ func main() {
 
 func setupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/game/new", handleNewGame)
-	mux.HandleFunc("/api/game/draw", handleDrawCard)
-	mux.HandleFunc("/api/leaderboard", handleLeaderboard)
+	mux.HandleFunc("/.netlify/functions/server/api/game/new", handleNewGame)
+	mux.HandleFunc("/.netlify/functions/server/api/game/draw", handleDrawCard)
+	mux.HandleFunc("/.netlify/functions/server/api/leaderboard", handleLeaderboard)
 	mux.HandleFunc("/ws", handleWebSocket)
-	mux.HandleFunc("/api/game/resume", handleResumeGame)
+	mux.HandleFunc("/.netlify/functions/server/api/game/resume", handleResumeGame)
 	return mux
 }
 

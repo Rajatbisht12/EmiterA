@@ -133,7 +133,7 @@ const Game = () => {
     if (!gameState.gameId) return;
 
     try {
-      const response = await fetch('http://localhost:8080/api/game/draw', {
+      const response = await fetch(`${API_URL}/api/game/draw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
