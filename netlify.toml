@@ -2,7 +2,9 @@
   command = "make netlify"
   publish = "ui/build"
   functions = "functions"
+
 [build.environment]
   GOBIN = "/opt/build/repo/functions"
+
 [template.environment]
   GO_IMPORT_PATH = "https://github.com/Rajatbisht12/EmiterA"

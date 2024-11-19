@@ -1,13 +1,11 @@
-.PHONY: test clean
-
 build:
 	mkdir -p functions
-	go get ./...
+	go mod download
 	go build -o ./functions/ ./server/...
 
 netlify:
 	mkdir -p functions
-	go get ./...
+	go mod download
 	go install ./...
 
 clean:
