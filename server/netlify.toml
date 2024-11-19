@@ -1,16 +1,7 @@
-# netlify.toml
 [build]
-  base = "."               
-  command = "go build -o ."      
-  publish = "server"             
-  functions = "server/functions"
-
-
+  command = "make build"
+  functions = "functions"
+  publish = "site"
 [build.environment]
-  GO_VERSION = "1.21"
-  CGO_ENABLED = "0"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server"
-  status = 200
+  # Change this path with the path to your repository
+  GO_IMPORT_PATH = "github.com/Rajatbisht12/EmiterA/tree/main/server"
