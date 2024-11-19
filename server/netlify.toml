@@ -1,6 +1,6 @@
 # netlify.toml
 [build]
-  command = "go build -o server"
+  command = "go build -o ."
   functions = "functions"
   publish = "."
 
