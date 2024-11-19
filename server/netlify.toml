@@ -1,37 +1,16 @@
 # netlify.toml
 [build]
-  command = "go build -o ."
-  functions = "functions"
-  publish = "."
+  base = "server"               
+  command = "go build -o ."      
+  publish = "server"             
+  functions = "server/functions"
+
 
 [build.environment]
   GO_VERSION = "1.21"
   CGO_ENABLED = "0"
 
 [[redirects]]
-  from = "/api/game/new"
-  to = "/.netlify/functions/server-game-new"
+  from = "/api/*"
+  to = "/.netlify/functions/server"
   status = 200
-
-[[redirects]]
-  from = "/api/game/draw"
-  to = "/.netlify/functions/server-game-draw"
-  status = 200
-
-[[redirects]]
-  from = "/api/leaderboard"
-  to = "/.netlify/functions/server-leaderboard"
-  status = 200
-
-[[redirects]]
-  from = "/api/game/resume"
-  to = "/.netlify/functions/server-game-resume"
-  status = 200
-
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type"
