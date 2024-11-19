@@ -1,6 +1,6 @@
 [build]
   command = "make netlify"
-  publish = "ui/build"
+  publish = "./ui/build"
   functions = "functions"
 
 [build.environment]
