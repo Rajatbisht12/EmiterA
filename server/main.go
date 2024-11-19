@@ -10,9 +10,11 @@ import (
 	"sync"
 	"time"
 
+	// "fmt"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
-	"github.com/joho/godotenv" // Import godotenv package
+	"github.com/joho/godotenv"
 )
 
 var ctx = context.Background()
@@ -58,31 +60,44 @@ var (
 	allowedOrigins = os.Getenv("ALLOWED_ORIGINS")
 )
 
-func main() {
-	// Load environment variables from .env file
-	err := godotenv.Load() // Load the .env file
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-
-	// Log the loaded variables for debugging purposes
-	log.Printf("REDIS_URL: %s, PORT: %s", redisURL, port)
-
-	if port == "" {
-		port = "8080"
-	}
-
+func initRedisClient() *redis.Client {
+	redisURL := os.Getenv("REDIS_URL")
 	if redisURL == "" {
-		redisURL = "redis://localhost:6379" // Default to local Redis if not set
+		log.Fatal("REDIS_URL environment variable is required")
 	}
 
-	// Initialize Redis client with configuration from environment
 	opt, err := redis.ParseURL(redisURL)
 	if err != nil {
-		log.Fatalf("Failed to parse Redis URL: %v", err)
+		log.Fatalf("Invalid Redis URL: %v", err)
 	}
 
-	redisClient = redis.NewClient(opt)
+	client := redis.NewClient(opt)
+
+	// Verify connection
+	_, err = client.Ping(ctx).Result()
+	if err != nil {
+		log.Fatalf("Redis connection failed: %v", err)
+	}
+
+	log.Println("Successfully connected to Redis")
+	return client
+}
+
+func main() {
+	// Load environment variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found, using system environment")
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default to 8080 if not set
+	}
+
+	// Initialize Redis client
+	redisClient = initRedisClient()
+	defer redisClient.Close()
 
 	// Test Redis connection
 	_, err = redisClient.Ping(ctx).Result()
@@ -90,6 +105,12 @@ func main() {
 		log.Fatalf("Failed to connect to Redis: %v", err)
 	}
 	log.Println("Connected to Redis successfully!")
+
+	err = redisClient.Do(ctx, "SELECT", 0).Err()
+	if err != nil {
+		log.Fatalf("Failed to switch database: %v", err)
+	}
+	log.Println("Successfully switched to database 1")
 
 	// Set up CORS middleware
 	handler := corsMiddleware(setupRoutes())
@@ -207,6 +228,14 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create or update user in Redis
+	err := redisClient.HSetNX(ctx, "players", request.Username, "0").Err()
+	if err != nil {
+		log.Printf("Error creating user: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	game := createNewGame(request.Username)
 
 	// Store game in Redis
@@ -263,7 +292,6 @@ func handleDrawCard(w http.ResponseWriter, r *http.Request) {
 	card := game.Deck[0]
 	game.Deck = game.Deck[1:]
 
-	// Handle card effects
 	var result struct {
 		Game   Game   `json:"game"`
 		Card   Card   `json:"card"`
@@ -272,27 +300,32 @@ func handleDrawCard(w http.ResponseWriter, r *http.Request) {
 	result.Card = card
 	result.Game = game
 
+	// Handle card effects with modified scoring
 	switch card.Type {
 	case "bomb":
 		if game.HasDefuse {
 			game.HasDefuse = false
 			result.Status = "defused"
+			// Award points for successfully defusing a bomb
+			updatePlayerScore(game.Username, 1)
 		} else {
 			result.Status = "exploded"
+			// Penalty for explosion, but won't go below 0
 			updatePlayerScore(game.Username, -1)
 		}
 	case "defuse":
 		game.HasDefuse = true
-		result.Game.HasDefuse = true // Add this line to update the result state
+		result.Game.HasDefuse = true
 		result.Status = "continue"
 	case "shuffle":
 		game = createNewGame(game.Username)
 		result.Status = "shuffled"
 		result.Game = game
-	default: // cat card
+	case "cat":
 		if len(game.Deck) == 0 {
 			result.Status = "won"
-			updatePlayerScore(game.Username, 1)
+			// Award points for winning
+			updatePlayerScore(game.Username, 2)
 		} else {
 			result.Status = "continue"
 		}
@@ -368,23 +401,40 @@ func createNewGame(username string) Game {
 }
 
 func updatePlayerScore(username string, points int) {
-	// Get previous score
-	prevScore, _ := redisClient.HGet(ctx, "players", username).Int()
+	// Get current score
+	currentScore, err := redisClient.HGet(ctx, "players", username).Int()
+	if err != nil {
+		log.Printf("Error getting current score: %v", err)
+		currentScore = 0
+	}
 
-	// Update score
-	redisClient.HIncrBy(ctx, "players", username, int64(points))
+	// Calculate new score, ensuring it doesn't go below 0
+	newScore := currentScore + points
+	if newScore < 0 {
+		newScore = 0
+	}
+
+	// Update score in Redis
+	err = redisClient.HSet(ctx, "players", username, newScore).Err()
+	if err != nil {
+		log.Printf("Error updating score: %v", err)
+		return
+	}
 
 	// Broadcast score update to all clients
 	update := ScoreUpdate{
 		Type:     "score_update",
 		Username: username,
-		Score:    prevScore + points,
-		Previous: prevScore,
+		Score:    newScore,
+		Previous: currentScore,
 	}
 
 	mutex.RLock()
 	for _, conn := range clients {
-		conn.WriteJSON(update)
+		err := conn.WriteJSON(update)
+		if err != nil {
+			log.Printf("Error broadcasting score update: %v", err)
+		}
 	}
 	mutex.RUnlock()
 }

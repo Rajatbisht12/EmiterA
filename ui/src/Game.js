@@ -95,13 +95,14 @@ const Game = () => {
 
   const startNewGame = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/game/resume`, {
+      const response = await fetch(`${API_URL}/api/game/new`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username: gameState.username }),
       });
+      
       const game = await response.json();
       dispatch(setGameState(game));
       setMessage('Game started! Draw a card.');
@@ -109,16 +110,17 @@ const Game = () => {
       setMessage('Error starting game.');
     }
   };
-
+  
   const resumeGame = async (gameId) => {
     try {
-      const response = await fetch(`${API_URL}/api/game/draw`, {
+      const response = await fetch(`${API_URL}/api/game/resume`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ gameId }),
       });
+      
       const game = await response.json();
       dispatch(setGameState(game));
       setMessage('Game resumed!');
@@ -126,7 +128,7 @@ const Game = () => {
       setMessage('Error resuming game.');
     }
   };
-
+  
   const drawCard = async () => {
     if (!gameState.gameId) return;
 
@@ -178,7 +180,7 @@ const Game = () => {
     }
 
     // Calculate the absolute difference while keeping track of increase/decrease
-    const rawScoreDiff = scoreInfo.previous - scoreInfo.current;
+    const rawScoreDiff = scoreInfo.current - scoreInfo.previous;
     const scoreDiff = Math.abs(rawScoreDiff);
     const diffColor = rawScoreDiff > 0 ? 'text-green-500' : 'text-red-500';
     

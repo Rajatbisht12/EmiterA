@@ -1,0 +1,21 @@
+# netlify.toml
+[build]
+  command = "go build -o server"
+  functions = "functions"
+  publish = "."
+
+[build.environment]
+  GO_VERSION = "1.21"
+  CGO_ENABLED = "0"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"
