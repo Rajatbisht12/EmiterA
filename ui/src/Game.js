@@ -10,8 +10,8 @@ import {
 } from './store';
 import './Game.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8080';
+const API_URL = process.env.REACT_APP_API_URL || 'https://emitera.onrender.com/api';
+const WS_URL = process.env.REACT_APP_WS_URL || 'wss://emitera.onrender.com';
 
 const Game = () => {
   const dispatch = useDispatch();

@@ -46,3 +46,5 @@
 /server/.env
 # Local Netlify folder
 .netlify
+
+/ui/build
