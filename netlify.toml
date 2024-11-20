@@ -21,7 +21,7 @@
   # Set the directory where your Go serverless functions are located
   directory = "/server"
 
-[[build.environment]]
+[build.environment]
   # Any environment variables needed for your build process (optional)
   NODE_ENV = "production"
 
