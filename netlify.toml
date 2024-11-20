@@ -1,10 +1,32 @@
+# netlify.toml
+
 [build]
-  command = "make netlify"
-  publish = "ui/build"
-  functions = "functions"
+  # Set the base directory for the project if needed (usually where the React app lives)
+  base = "/"  # Optional, if your project is nested. Otherwise, omit this line.
 
-[build.environment]
-  GOBIN = "/opt/build/repo/functions"
+  # Command to build both the React frontend and the Go backend
+  command = "make build"
 
-[template.environment]
-  GO_IMPORT_PATH = "https://github.com/Rajatbisht12/EmiterA"
+  # Publish directory for the React frontend build output
+  publish = "/ui/build"
+
+# Redirects for API calls to Go serverless functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+[[functions]]
+  # Set the directory where your Go serverless functions are located
+  directory = "server"
+
+[[build.environment]]
+  # Any environment variables needed for your build process (optional)
+  NODE_ENV = "production"
+
+# Optional headers for caching, security, etc.
+[[headers]]
+  for = "/ui/build/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, s-maxage=86400"
