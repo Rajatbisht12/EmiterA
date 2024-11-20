@@ -17,7 +17,7 @@
   status = 200
   force = true
 
-[[functions]]
+[functions]
   # Set the directory where your Go serverless functions are located
   directory = "/server"
 
