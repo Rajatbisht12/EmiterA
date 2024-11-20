@@ -2,13 +2,13 @@
 
 [build]
   # Set the base directory for the project if needed (usually where the React app lives)
-  base = "/"  # Optional, if your project is nested. Otherwise, omit this line.
+  base = "ui"  # Optional, if your project is nested. Otherwise, omit this line.
 
-  # Command to build both the React frontend and the Go backend
-  command = "make build"
+  # Ensure npm install is run before the build command
+  command = "npm install && make build"  # Run npm install first, then run make build
 
   # Publish directory for the React frontend build output
-  publish = "/ui/build"
+  publish = "ui/build"
 
 # Redirects for API calls to Go serverless functions
 [[redirects]]
@@ -18,11 +18,11 @@
   force = true
 
 [functions]
-  # Set the directory where your Go serverless functions are located
-  directory = "/server"
+  # Corrected syntax for specifying Go function directory
+  directory = "server"
 
 [build.environment]
-  # Any environment variables needed for your build process (optional)
+  # Correct format: key-value pairs for environment variables
   NODE_ENV = "production"
 
 # Optional headers for caching, security, etc.
