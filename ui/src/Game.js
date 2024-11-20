@@ -42,7 +42,7 @@ const Game = () => {
       setWs(websocket);
       return () => websocket.close();
     }
-  }, [gameState.isLoggedIn, gameState.username, websocket]);
+  }, [gameState.isLoggedIn, gameState.username]);
 
   // Load game state from session storage on component mount
   useEffect(() => {
@@ -65,7 +65,7 @@ const Game = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/leaderboard`);
+        const response = await fetch(`${API_URL}/leaderboard`);
         const data = await response.json();
         dispatch(updateLeaderboard(data));
       } catch (error) {
@@ -95,7 +95,7 @@ const Game = () => {
 
   const startNewGame = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/game/new`, {
+      const response = await fetch(`${API_URL}/game/new`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const Game = () => {
   
   const resumeGame = async (gameId) => {
     try {
-      const response = await fetch(`${API_URL}/api/game/resume`, {
+      const response = await fetch(`${API_URL}/game/resume`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const Game = () => {
     if (!gameState.gameId) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/game/draw`, {
+      const response = await fetch(`${API_URL}/game/draw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

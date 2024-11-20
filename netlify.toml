@@ -1,32 +1,13 @@
-# netlify.toml
-
 [build]
-  # Set the base directory for the project
-  base = "."  # Root directory of your project
-  
-  # Command to build both the React frontend and Go backend
-  command = "make build"  # This will run the make command from the root of the project
+  base = "."  # Ensure this points to the root of your project
+  command = "make build"  # This should invoke the Makefile to build both UI and server
+  publish = "ui/build"  # Correct path to the React build folder
 
-  # Publish directory for the React frontend build output
-  publish = "ui/build"
+[functions]
+  directory = "server"  # Correct path to the Go serverless functions
 
-# Redirects for API calls to Go serverless functions
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
   force = true
-
-[functions]
-  # Corrected syntax for specifying Go function directory
-  directory = "server"
-
-[build.environment]
-  # Correct format: key-value pairs for environment variables
-  NODE_ENV = "production"
-
-# Optional headers for caching, security, etc.
-[[headers]]
-  for = "/ui/build/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, s-maxage=86400"
