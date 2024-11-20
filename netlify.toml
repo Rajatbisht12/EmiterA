@@ -19,7 +19,7 @@
 
 [[functions]]
   # Set the directory where your Go serverless functions are located
-  directory = "server"
+  directory = "/server"
 
 [[build.environment]]
   # Any environment variables needed for your build process (optional)
