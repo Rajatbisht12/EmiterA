@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Trophy, Bomb, Cat, Shield, Shuffle } from 'lucide-react';
 import { 
@@ -10,7 +10,7 @@ import {
 } from './store';
 import './Game.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8080';
 
 const Game = () => {
@@ -19,6 +19,25 @@ const Game = () => {
   const [message, setMessage] = useState('');
   const [playerScores, setPlayerScores] = useState(new Map());
   const [ws, setWs] = useState(null);
+
+  // Define resumeGame with useCallback to prevent recreation on every render
+  const resumeGame = useCallback(async (gameId) => {
+    try {
+      const response = await fetch(`${API_URL}/game/resume`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ gameId }),
+      });
+      
+      const game = await response.json();
+      dispatch(setGameState(game));
+      setMessage('Game resumed!');
+    } catch (error) {
+      setMessage('Error resuming game.');
+    }
+  }, [dispatch]);
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -42,7 +61,7 @@ const Game = () => {
       setWs(websocket);
       return () => websocket.close();
     }
-  }, [gameState.isLoggedIn, gameState.username]);
+  }, [gameState.isLoggedIn, gameState.username, ws]);
 
   // Load game state from session storage on component mount
   useEffect(() => {
@@ -52,14 +71,14 @@ const Game = () => {
       dispatch(setGameState(parsedGame));
       resumeGame(parsedGame.gameId);
     }
-  }, []);
+  }, [dispatch, resumeGame]);
 
   // Save game state to session storage whenever it changes
   useEffect(() => {
     if (gameState.gameId) {
       sessionStorage.setItem('gameState', JSON.stringify(gameState));
     }
-  }, [gameState, dispatch, resumeGame]);
+  }, [gameState]);
 
   // Fetch leaderboard periodically
   useEffect(() => {
@@ -81,13 +100,13 @@ const Game = () => {
   const getCardIcon = (cardType) => {
     switch (cardType) {
       case 'cat':
-        return <Cat className="icon" style={{ color: '#f97316' }} />; // orange-500
+        return <Cat className="icon" style={{ color: '#f97316' }} />;
       case 'defuse':
-        return <Shield className="icon" style={{ color: '#3b82f6' }} />; // blue-500
+        return <Shield className="icon" style={{ color: '#3b82f6' }} />;
       case 'bomb':
-        return <Bomb className="icon" style={{ color: '#ef4444' }} />; // red-500
+        return <Bomb className="icon" style={{ color: '#ef4444' }} />;
       case 'shuffle':
-        return <Shuffle className="icon" style={{ color: '#a855f7' }} />; // purple-500
+        return <Shuffle className="icon" style={{ color: '#a855f7' }} />;
       default:
         return null;
     }
@@ -108,24 +127,6 @@ const Game = () => {
       setMessage('Game started! Draw a card.');
     } catch (error) {
       setMessage('Error starting game.');
-    }
-  };
-  
-  const resumeGame = async (gameId) => {
-    try {
-      const response = await fetch(`${API_URL}/game/resume`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ gameId }),
-      });
-      
-      const game = await response.json();
-      dispatch(setGameState(game));
-      setMessage('Game resumed!');
-    } catch (error) {
-      setMessage('Error resuming game.');
     }
   };
   
@@ -179,7 +180,6 @@ const Game = () => {
       return <span>{player.score} points</span>;
     }
 
-    // Calculate the absolute difference while keeping track of increase/decrease
     const rawScoreDiff = scoreInfo.current - scoreInfo.previous;
     const scoreDiff = Math.abs(rawScoreDiff);
     const diffColor = rawScoreDiff > 0 ? 'text-green-500' : 'text-red-500';
@@ -195,7 +195,6 @@ const Game = () => {
       </div>
     );
   };
-
 
   const renderLeaderboard = () => (
     <div className="card leaderboard-card">
