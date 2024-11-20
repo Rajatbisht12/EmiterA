@@ -42,7 +42,7 @@ const Game = () => {
       setWs(websocket);
       return () => websocket.close();
     }
-  }, [gameState.isLoggedIn, gameState.username]);
+  }, [gameState.isLoggedIn, gameState.username, websocket]);
 
   // Load game state from session storage on component mount
   useEffect(() => {
@@ -59,7 +59,7 @@ const Game = () => {
     if (gameState.gameId) {
       sessionStorage.setItem('gameState', JSON.stringify(gameState));
     }
-  }, [gameState]);
+  }, [gameState, dispatch, resumeGame]);
 
   // Fetch leaderboard periodically
   useEffect(() => {
