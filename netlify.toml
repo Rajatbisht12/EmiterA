@@ -1,11 +1,11 @@
 # netlify.toml
 
 [build]
-  # Set the base directory for the project if needed (usually where the React app lives)
-  base = "ui"  # Optional, if your project is nested. Otherwise, omit this line.
-
-  # Ensure npm install is run before the build command
-  command = "npm install && make build"  # Run npm install first, then run make build
+  # Set the base directory for the project
+  base = "."  # Root directory of your project
+  
+  # Command to build both the React frontend and Go backend
+  command = "make build"  # This will run the make command from the root of the project
 
   # Publish directory for the React frontend build output
   publish = "ui/build"
