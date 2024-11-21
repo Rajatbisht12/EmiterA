@@ -23,7 +23,7 @@ cd server
 # Create a .env file inside the server folder and add the following environment variables
 nano .env
 '''
-REDIS_URL=redis://default:DaCPjAdf6O1WplQ9mXJPwkcKNEO09fca@redis-13966.c264.ap-south-1-1.ec2.redns.redis-cloud.com:13966/0
+#REDIS_URL=redis://default:DaCPjAdf6O1WplQ9mXJPwkcKNEO09fca@redis-13966.c264.ap-south-1-1.ec2.redns.redis-cloud.com:13966/0
 PORT=8080
 ALLOWED_ORIGINS=*
 '''
